@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Employee</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+	var employeeList = [];
+
+	$(document)
+			.ready(
+					function() {
+						$.getJSON(
+										"http://localhost:8080/user-app/rest/employee/list",
+										function(json) {
+											//employeeList=JSON.stringify(json);
+											employeeList = json;
+											var tr = [];
+											for (var i = 0; i < employeeList.length; i++) {
+												tr.push('<tr>');
+												tr.push("<td>"
+														+ employeeList[i].empid
+														+ "</td>");
+												tr.push("<td>"
+														+ employeeList[i].name
+														+ "</td>");
+												tr
+														.push("<td>"
+																+ employeeList[i].surname
+																+ "</td>");
+												tr
+														.push("<td>"
+																+ ('<input type="button"   onClick="onClickFunction('
+																		+ i + ')" name="update " value="Edit" />')
+																+ "</td>");
+												tr.push('</tr>');
+											}
+											$('table').append($(tr.join('')));
+										}).then(function() {
+									$("#target").hide();
+								});
+					});
+
+	function onClickFunction(index) {
+		var employee = employeeList[index];
+		$('#name').val(employee.name);
+		$('#surname').val(employee.surname);
+		$('#empid').val(employee.empid);
+		$("#target").show();
+	}
+
+	function toggleForm() {
+		$("#target").show();
+	};
+
+	$(document).ready(function() {
+						$("#htmlForm").submit(function() {
+											var name = $('#name').val();
+											var surname = $('#surname').val();
+											
+											if($('#empid').val()==0){
+												console.log("add");
+												$.ajax({
+													contentType : "application/x-www-form-urlencoded;charset=utf-8",
+													url : "http://localhost:8080/user-app/rest/employee/create",		
+													type : "POST",
+													data : "name=" + name
+															+ "&surname="
+															+ surname,
+													cache : false,
+													success : function(	response) {
+														//var empResponse=JSON.stringify(response);
+														employeeList.push(response);
+														console.log(employeeList);												
+
+													},
+													error : function(error) {
+													}
+												});
+											}else{												
+												employee=JSON.stringify({"name":$('#name').val(),"surname":$('#surname').val(),"empid":$('#empid').val()});
+												$.ajax({
+													url : "http://localhost:8080/user-app/rest/employee/update",
+													type : "POST",
+													data : employee,
+													contentType:"application/json",
+													cache : false,			
+													success : function(response) {														
+														employeeList.push(response);																					
+													},
+													error : function(error) {
+													}
+												});
+												
+											}
+										
+										});
+					});
+</script>
+
+
+</head>
+<body>
+	<div id="tableId">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>empId</th>
+					<th>name</th>
+					<th>surname</th>
+					<th>command</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+	<div>
+		<input type="button" data-inline="false" onclick="toggleForm()"
+			value="ADD">
+	</div>
+
+	<div class="toggle-button" id="target">
+		<form id="htmlForm" action="#">
+			<div style="width: 200px; text-align: left;">
+				<div style="padding: 10px;">
+					Employee Name: <input type="text" name="name" id="name" />
+				</div>
+				<div style="padding: 10px;">
+					Employee Surname: <input type="text" name="surname" id="surname" />
+				</div>
+				<div style="padding: 10px; text-align: center">
+					<input type="submit" value="Submit" />					
+				</div>
+				<div>
+				 <input type="hidden" name="empid" value="0" id="empid">
+				</div>
+		</form>
+	</div>
+
+</body>
+</html>
